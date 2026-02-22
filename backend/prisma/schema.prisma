@@ -1,0 +1,174 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  OWNER
+  ADMIN
+  AGENT
+}
+
+model Company {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+
+  users            User[]
+  whatsAppAccounts WhatsAppAccount[]
+  contacts         Contact[]
+  tickets          Ticket[]
+  funnels          Funnel[]
+}
+
+model User {
+  id        String   @id @default(cuid())
+  companyId String
+  email     String
+  password  String
+  name      String
+  role      UserRole @default(AGENT)
+  avatarUrl String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  assignedTickets Ticket[] @relation("AssignedTo")
+
+  @@unique([companyId, email])
+  @@index([companyId])
+  @@index([companyId, email])
+}
+
+model WhatsAppAccount {
+  id           String   @id @default(cuid())
+  companyId    String
+  evolutionId  String
+  sessionName  String
+  status       String   @default("DISCONNECTED")
+  phoneNumber  String?
+  qrCode       String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  deletedAt    DateTime?
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  tickets Ticket[]
+
+  @@unique([companyId, evolutionId])
+  @@index([companyId])
+}
+
+model Contact {
+  id          String   @id @default(cuid())
+  companyId   String
+  phone       String
+  name        String?
+  email       String?
+  profilePic  String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  deletedAt   DateTime?
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  tickets Ticket[]
+
+  @@unique([companyId, phone])
+  @@index([companyId])
+  @@index([companyId, phone])
+}
+
+model Funnel {
+  id         String   @id @default(cuid())
+  companyId  String
+  name       String
+  isDefault  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  deletedAt  DateTime?
+
+  company Company      @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  steps   FunnelStep[]
+
+  tickets Ticket[]
+
+  @@index([companyId])
+  @@index([companyId, isDefault])
+}
+
+model FunnelStep {
+  id        String   @id @default(cuid())
+  funnelId  String
+  name      String
+  order     Int
+  color     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+
+  funnel Funnel @relation(fields: [funnelId], references: [id], onDelete: Cascade)
+  tickets Ticket[]
+
+  @@index([funnelId])
+  @@index([funnelId, order])
+}
+
+model Ticket {
+  id               String    @id @default(cuid())
+  companyId        String
+  contactId        String
+  whatsAppAccountId String
+  funnelStepId     String
+  assignedToId     String?
+  lastMessageAt    DateTime  @default(now())
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  deletedAt        DateTime?
+
+  company         Company         @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  contact         Contact         @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  whatsAppAccount WhatsAppAccount @relation(fields: [whatsAppAccountId], references: [id], onDelete: Cascade)
+  funnelStep      FunnelStep      @relation(fields: [funnelStepId], references: [id], onDelete: Restrict)
+  assignedTo      User?          @relation("AssignedTo", fields: [assignedToId], references: [id], onDelete: SetNull)
+  messages        Message[]
+
+  @@unique([companyId, contactId, whatsAppAccountId])
+  @@index([companyId])
+  @@index([companyId, lastMessageAt(sort: Desc)])
+  @@index([companyId, funnelStepId])
+  @@index([companyId, assignedToId])
+}
+
+model Message {
+  id               String   @id @default(cuid())
+  companyId        String
+  ticketId         String
+  externalId       String?
+  content          String
+  fromMe           Boolean
+  mediaUrl         String?
+  mediaType        String?
+  status           String?  @default("SENT")
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  deletedAt        DateTime?
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  ticket  Ticket  @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+
+  @@unique([companyId, externalId])
+  @@index([companyId])
+  @@index([ticketId])
+  @@index([companyId, ticketId, createdAt(sort: Desc)])
+}
