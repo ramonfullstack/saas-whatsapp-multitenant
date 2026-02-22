@@ -1,4 +1,5 @@
 import { Controller, Post, Body, Logger } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { Public } from '../../common/decorators';
 import { WhatsappWebhookService } from './whatsapp-webhook.service';
 
@@ -28,6 +29,7 @@ export interface EvolutionMessagePayload {
   messageType?: string;
 }
 
+@ApiTags('webhook')
 @Controller('webhook')
 export class WhatsappWebhookController {
   private readonly logger = new Logger(WhatsappWebhookController.name);

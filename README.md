@@ -41,7 +41,8 @@ npx prisma db seed
 npm run start:dev
 ```
 
-API em `http://localhost:3001`.
+API em `http://localhost:3001`.  
+**Swagger (documentação):** http://localhost:3001/api/docs — faça login em **POST /auth/login** e depois clique em **Authorize** para colar o `access_token` e testar as rotas protegidas.
 
 ### 3. Frontend
 

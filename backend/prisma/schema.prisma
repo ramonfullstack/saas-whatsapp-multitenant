@@ -26,6 +26,7 @@ model Company {
   contacts         Contact[]
   tickets          Ticket[]
   funnels          Funnel[]
+  messages         Message[]
 }
 
 model User {
@@ -100,8 +101,6 @@ model Funnel {
 
   company Company      @relation(fields: [companyId], references: [id], onDelete: Cascade)
   steps   FunnelStep[]
-
-  tickets Ticket[]
 
   @@index([companyId])
   @@index([companyId, isDefault])

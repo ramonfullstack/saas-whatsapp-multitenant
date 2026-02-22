@@ -43,6 +43,10 @@ export class WhatsappWebhookService {
       contact.id,
       account.id,
     );
+    if (!ticket) {
+      this.logger.warn('Failed to get or create ticket');
+      return;
+    }
 
     await this.messages.createFromWebhook(companyId, ticket.id, {
       externalId: data.externalId,

@@ -7,6 +7,7 @@ import {
   Body,
   Param,
 } from '@nestjs/common';
+import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -18,30 +19,36 @@ import { UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../../common/guards';
 import { CompanyContextGuard } from '../../common/guards';
 
+@ApiTags('users')
+@ApiBearerAuth('JWT')
 @UseGuards(JwtAuthGuard, CompanyContextGuard, RolesGuard)
 @Controller('users')
 export class UsersController {
   constructor(private readonly users: UsersService) {}
 
   @Get()
+  @ApiOperation({ summary: 'Listar usuários (OWNER/ADMIN)' })
   @Roles(UserRole.OWNER, UserRole.ADMIN)
   findAll(@CompanyId() companyId: string) {
     return this.users.findAll(companyId);
   }
 
   @Get(':id')
+  @ApiOperation({ summary: 'Buscar usuário por ID' })
   @Roles(UserRole.OWNER, UserRole.ADMIN)
   findOne(@CompanyId() companyId: string, @Param('id') id: string) {
     return this.users.findOne(companyId, id);
   }
 
   @Post()
+  @ApiOperation({ summary: 'Criar usuário' })
   @Roles(UserRole.OWNER, UserRole.ADMIN)
   create(@CompanyId() companyId: string, @Body() dto: CreateUserDto) {
     return this.users.create(companyId, dto);
   }
 
   @Patch(':id')
+  @ApiOperation({ summary: 'Atualizar usuário' })
   @Roles(UserRole.OWNER, UserRole.ADMIN)
   update(
     @CompanyId() companyId: string,
@@ -52,6 +59,7 @@ export class UsersController {
   }
 
   @Delete(':id')
+  @ApiOperation({ summary: 'Remover usuário (soft delete)' })
   @Roles(UserRole.OWNER, UserRole.ADMIN)
   remove(@CompanyId() companyId: string, @Param('id') id: string) {
     return this.users.remove(companyId, id);

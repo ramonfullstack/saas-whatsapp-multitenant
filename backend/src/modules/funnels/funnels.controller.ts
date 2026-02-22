@@ -6,6 +6,7 @@ import {
   Body,
   Param,
 } from '@nestjs/common';
+import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { FunnelsService } from './funnels.service';
 import { CreateFunnelDto } from './dto/create-funnel.dto';
 import { CreateFunnelStepDto } from './dto/create-funnel-step.dto';
@@ -18,6 +19,8 @@ import { Roles } from '../../common/decorators';
 import { RolesGuard } from '../../common/guards';
 import { UserRole } from '@prisma/client';
 
+@ApiTags('funnels')
+@ApiBearerAuth('JWT')
 @UseGuards(JwtAuthGuard, CompanyContextGuard, RolesGuard)
 @Controller('funnels')
 export class FunnelsController {

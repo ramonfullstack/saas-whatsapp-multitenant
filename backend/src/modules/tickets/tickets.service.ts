@@ -155,6 +155,7 @@ export class TicketsService {
         contact: true,
         funnelStep: true,
         whatsAppAccount: true,
+        assignedTo: { select: { id: true, name: true, email: true } },
       },
     });
     return ticket;
