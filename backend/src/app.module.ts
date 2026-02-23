@@ -11,6 +11,7 @@ import { FunnelsModule } from './modules/funnels/funnels.module';
 import { TicketsModule } from './modules/tickets/tickets.module';
 import { MessagesModule } from './modules/messages/messages.module';
 import { WhatsappModule } from './modules/whatsapp/whatsapp.module';
+import { AiModule } from './modules/ai/ai.module';
 import { JwtAuthGuard } from './common/guards';
 import { CompanyContextGuard } from './common/guards';
 import { AllExceptionsFilter } from './common/filters/http-exception.filter';
@@ -35,6 +36,7 @@ import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
     TicketsModule,
     MessagesModule,
     WhatsappModule,
+    AiModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: JwtAuthGuard },

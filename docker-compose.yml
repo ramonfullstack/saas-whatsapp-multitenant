@@ -40,6 +40,9 @@ services:
       EVOLUTION_API_KEY: "B6D04C627EF9-4FC2-A1F6-6E357651931B"
       PORT: 3001
       CORS_ORIGIN: http://localhost:3000,http://frontend:3000
+      AI_PROVIDER: openai
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
     ports:
       - "3001:3001"
     depends_on:
@@ -92,7 +95,7 @@ services:
       WEBHOOK_EVENTS_MESSAGES_UPDATE: "true"
       WEBHOOK_EVENTS_CONNECTION_UPDATE: "true"
       WEBHOOK_EVENTS_QRCODE_UPDATED: "true"
-      LOG_LEVEL: "WARN"
+      LOG_LEVEL: "DEBUG"
     depends_on:
       postgres:
         condition: service_healthy

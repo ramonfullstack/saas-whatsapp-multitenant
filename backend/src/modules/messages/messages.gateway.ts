@@ -66,4 +66,9 @@ export class MessagesGateway implements OnGatewayInit, OnGatewayConnection, OnGa
   emitUserOnline(companyId: string, payload: { userId: string; online: boolean }): void {
     this.server.to(this.getRoom(companyId)).emit('user.online', payload);
   }
+
+  /** Generic emit — usado pelo AI module e outros */
+  emitToCompany(companyId: string, event: string, payload: unknown): void {
+    this.server.to(this.getRoom(companyId)).emit(event, payload);
+  }
 }

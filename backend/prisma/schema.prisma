@@ -27,6 +27,7 @@ model Company {
   tickets          Ticket[]
   funnels          Funnel[]
   messages         Message[]
+  aiSettings       CompanyAiSettings?
 }
 
 model User {
@@ -170,4 +171,85 @@ model Message {
   @@index([companyId])
   @@index([ticketId])
   @@index([companyId, ticketId, createdAt(sort: Desc)])
+}
+
+// ─── AI Module ──────────────────────────────────────────────────
+
+enum AiRunType {
+  REPLY_SUGGESTION
+  SUMMARY
+  CLASSIFY
+  URGENCY
+}
+
+enum AiRunStatus {
+  PENDING
+  PROCESSING
+  SUCCESS
+  ERROR
+}
+
+model CompanyAiSettings {
+  id                   String   @id @default(cuid())
+  companyId            String   @unique
+  enabled              Boolean  @default(true)
+  provider             String   @default("openai") // openai | anthropic | local
+  model                String   @default("gpt-4o-mini")
+  tone                 String   @default("professional") // professional | friendly | concise | custom
+  customTonePrompt     String?  // usado quando tone = "custom"
+  guardrails           String[] @default([]) // regras: "nunca prometer desconto", etc.
+  knowledgeBaseEnabled Boolean  @default(false)
+  maxTokensPerRequest  Int      @default(1024)
+  dailyLimitTokens     Int      @default(100000)
+  dailyTokensUsed      Int      @default(0)
+  dailyResetAt         DateTime @default(now())
+  saveOutputs          Boolean  @default(true)
+  redactSensitiveData  Boolean  @default(true)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@index([companyId])
+}
+
+model AiRun {
+  id            String      @id @default(cuid())
+  companyId     String
+  ticketId      String
+  userId        String?
+  type          AiRunType
+  status        AiRunStatus @default(PENDING)
+  inputHash     String?     // sha256 do input pra cache
+  input         String?     // contexto enviado (opcional, depende de saveOutputs)
+  output        String?     // resposta da IA
+  tokensInput   Int?
+  tokensOutput  Int?
+  costEstimate  Float?      // custo estimado em USD
+  provider      String?
+  model         String?
+  latencyMs     Int?
+  errorMessage  String?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@index([companyId])
+  @@index([companyId, ticketId])
+  @@index([companyId, type, createdAt(sort: Desc)])
+  @@index([inputHash]) // cache lookup
+}
+
+model TicketSummary {
+  id            String   @id @default(cuid())
+  companyId     String
+  ticketId      String
+  summary       String
+  messageCount  Int      // qtde de msgs na hora do resumo
+  aiRunId       String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([companyId, ticketId])
+  @@index([companyId])
+  @@index([ticketId])
 }
